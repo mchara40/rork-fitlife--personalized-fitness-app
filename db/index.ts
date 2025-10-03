@@ -1,9 +1,9 @@
-import { Platform } from 'react-native';
 import * as schema from './schema';
 
 let db: any = null;
 
-if (Platform.OS === 'web' && typeof window === 'undefined') {
+// Run only in server/node environments
+if (typeof window === 'undefined') {
   try {
     const { drizzle } = require('drizzle-orm/better-sqlite3');
     const Database = require('better-sqlite3');

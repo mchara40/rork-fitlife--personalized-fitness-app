@@ -1,7 +1,5 @@
-import { Platform } from 'react-native';
-
 export async function hashPassword(password: string): Promise<string> {
-  if (Platform.OS === 'web' && typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     const bcrypt = require('bcryptjs');
     return bcrypt.hash(password, 10);
   }
@@ -9,7 +7,7 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  if (Platform.OS === 'web' && typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     const bcrypt = require('bcryptjs');
     return bcrypt.compare(password, hash);
   }
@@ -23,7 +21,7 @@ export async function createUser(data: {
   gender?: 'male' | 'female' | 'all';
   role?: 'user' | 'admin';
 }) {
-  if (Platform.OS === 'web' && typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     const { db } = require('@/db');
     const { users } = require('@/db/schema');
     
@@ -51,7 +49,7 @@ export async function createUser(data: {
 }
 
 export async function authenticateUser(email: string, password: string) {
-  if (Platform.OS === 'web' && typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     const { db } = require('@/db');
     const { users } = require('@/db/schema');
     const { eq } = require('drizzle-orm');

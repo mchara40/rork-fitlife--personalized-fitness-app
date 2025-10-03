@@ -53,8 +53,11 @@
     "@babel/core": "^7.25.2",
     "@expo/ngrok": "^4.1.0",
     "@types/react": "~19.0.10",
+    "drizzle-kit": "^0.31.5",
     "eslint": "^9.31.0",
     "eslint-config-expo": "^9.2.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "~5.8.3"
   },
   "private": true
