@@ -1,346 +1,214 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { 
-  Plus, 
-  Users, 
-  Dumbbell, 
-  BookOpen, 
-  BarChart3, 
-  Settings,
-  ChevronRight,
-  Activity,
-  TrendingUp,
-  Clock
-} from 'lucide-react-native';
-
-import Colors from '@/constants/colors';
+import { Plus, Dumbbell, ListChecks, Users, Settings } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import Colors from '@/constants/colors';
 
 export default function AdminDashboard() {
-  const { session } = useAuth();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+    const router = useRouter();
+    const { isAdmin, session } = useAuth();
 
-  const stats = [
-    { label: 'Total Users', value: '1,234', icon: Users, color: Colors.primary },
-    { label: 'Active Subscriptions', value: '856', icon: TrendingUp, color: Colors.success },
-    { label: 'Exercises', value: '45', icon: Dumbbell, color: Colors.secondary },
-    { label: 'Programs', value: '12', icon: BookOpen, color: Colors.accent },
-  ];
-
-  const quickActions = [
-    {
-      title: 'Manage Exercises',
-      description: 'Add, edit, or remove exercises',
-      icon: Dumbbell,
-      onPress: () => router.push('/admin/exercises'),
-      color: Colors.primary,
-    },
-    {
-      title: 'Manage Programs',
-      description: 'Create and edit workout programs',
-      icon: BookOpen,
-      onPress: () => router.push('/admin/programs'),
-      color: Colors.secondary,
-    },
-    {
-      title: 'User Management',
-      description: 'View and manage user accounts',
-      icon: Users,
-      onPress: () => router.push('/admin/users'),
-      color: Colors.accent,
-    },
-    {
-      title: 'Analytics',
-      description: 'View app usage and performance',
-      icon: BarChart3,
-      onPress: () => router.push('/admin/analytics'),
-      color: Colors.success,
-    },
-  ];
-
-  const recentActivity = [
-    { action: 'New user registered', time: '2 minutes ago', type: 'user' },
-    { action: 'Exercise "Push-ups" updated', time: '15 minutes ago', type: 'exercise' },
-    { action: 'New subscription created', time: '1 hour ago', type: 'subscription' },
-    { action: 'Program "Beginner Strength" published', time: '2 hours ago', type: 'program' },
-  ];
-
-  return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[Colors.background, Colors.backgroundLight]}
-        style={StyleSheet.absoluteFill}
-      />
-      
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Welcome back, {session?.name}</Text>
-            <Text style={styles.title}>Admin Dashboard</Text>
-          </View>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Settings size={24} color={Colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.statsContainer}>
-          {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
-              <View style={styles.statIconContainer}>
-                <stat.icon size={24} color={stat.color} />
-              </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+    if (!isAdmin) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.errorText}>Access Denied: Admin Only</Text>
             </View>
-          ))}
-        </View>
+        );
+    }
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-          </View>
-          {quickActions.map((action, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.actionCard}
-              onPress={action.onPress}
-            >
-              <View style={styles.actionContent}>
-                <View style={[styles.actionIcon, { backgroundColor: action.color + '20' }]}>
-                  <action.icon size={24} color={action.color} />
-                </View>
-                <View style={styles.actionText}>
-                  <Text style={styles.actionTitle}>{action.title}</Text>
-                  <Text style={styles.actionDescription}>{action.description}</Text>
-                </View>
-                <ChevronRight size={20} color={Colors.textSecondary} />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+    const adminCards = [
+        {
+            title: 'Add Program',
+            description: 'Create new workout program',
+            icon: Plus,
+            color: Colors.primary,
+            route: '/admin/add-program',
+        },
+        {
+            title: 'Add Exercise',
+            description: 'Add new exercise to library',
+            icon: Dumbbell,
+            color: Colors.secondary,
+            route: '/admin/add-exercise',
+        },
+        {
+            title: 'Manage Programs',
+            description: 'Edit or delete programs',
+            icon: ListChecks,
+            color: '#10b981',
+            route: '/admin/manage-programs',
+        },
+        {
+            title: 'User Management',
+            description: 'View and manage users',
+            icon: Users,
+            color: '#f59e0b',
+            route: '/admin/users',
+        },
+    ];
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-          {recentActivity.map((activity, index) => (
-            <View key={index} style={styles.activityItem}>
-              <View style={styles.activityIcon}>
-                <Activity size={16} color={Colors.textSecondary} />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityAction}>{activity.action}</Text>
-                <View style={styles.activityTime}>
-                  <Clock size={12} color={Colors.textMuted} />
-                  <Text style={styles.activityTimeText}>{activity.time}</Text>
+    return (
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+            <View style={styles.header}>
+                <View style={styles.headerIcon}>
+                    <Settings color={Colors.primary} size={32} />
                 </View>
-              </View>
+                <Text style={styles.title}>Admin Dashboard</Text>
+                <Text style={styles.subtitle}>Welcome, {session?.name}</Text>
             </View>
-          ))}
-        </View>
 
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.addButton}>
-            <LinearGradient
-              colors={[Colors.primary, Colors.secondary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.addGradient}
-            >
-              <Plus size={24} color={Colors.white} />
-              <Text style={styles.addButtonText}>Add New Content</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
-  );
+            <View style={styles.grid}>
+                {adminCards.map((card, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={styles.card}
+                        onPress={() => router.push(card.route as any)}
+                        activeOpacity={0.7}
+                    >
+                        <View style={[styles.cardIcon, { backgroundColor: `${card.color}15` }]}>
+                            <card.icon color={card.color} size={32} />
+                        </View>
+                        <Text style={styles.cardTitle}>{card.title}</Text>
+                        <Text style={styles.cardDescription}>{card.description}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+
+            <View style={styles.statsContainer}>
+                <Text style={styles.statsTitle}>Quick Stats</Text>
+                <View style={styles.statsGrid}>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statValue}>12</Text>
+                        <Text style={styles.statLabel}>Programs</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statValue}>48</Text>
+                        <Text style={styles.statLabel}>Exercises</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statValue}>156</Text>
+                        <Text style={styles.statLabel}>Users</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statValue}>89</Text>
+                        <Text style={styles.statLabel}>Active Subs</Text>
+                    </View>
+                </View>
+            </View>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  greeting: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: Colors.text,
-  },
-  settingsButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.backgroundCard,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 32,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  statIconContainer: {
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700' as const,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '700' as const,
-    color: Colors.text,
-  },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: Colors.secondary,
-  },
-  actionCard: {
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  actionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  actionText: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  actionDescription: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 20,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  activityIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityAction: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  activityTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  activityTimeText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
-  addButton: {
-    marginHorizontal: 20,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  addGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 8,
-  },
-  addButtonText: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: Colors.white,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: Colors.background,
+    },
+    content: {
+        padding: 20,
+    },
+    header: {
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    headerIcon: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: `${Colors.primary}15`,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: '800' as const,
+        color: Colors.text,
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: Colors.textMuted,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 16,
+        marginBottom: 32,
+    },
+    card: {
+        width: '48%',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    cardIcon: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: '700' as const,
+        color: Colors.text,
+        marginBottom: 4,
+    },
+    cardDescription: {
+        fontSize: 13,
+        color: Colors.textMuted,
+        lineHeight: 18,
+    },
+    statsContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    statsTitle: {
+        fontSize: 18,
+        fontWeight: '700' as const,
+        color: Colors.text,
+        marginBottom: 16,
+    },
+    statsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    statCard: {
+        width: '48%',
+        backgroundColor: Colors.background,
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+    },
+    statValue: {
+        fontSize: 32,
+        fontWeight: '800' as const,
+        color: Colors.primary,
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 14,
+        color: Colors.textMuted,
+    },
+    errorText: {
+        fontSize: 18,
+        color: '#ef4444',
+        textAlign: 'center',
+        marginTop: 40,
+    },
 });

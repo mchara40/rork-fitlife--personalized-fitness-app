@@ -15,6 +15,51 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen 
+        name="auth/login" 
+        options={{ 
+          headerShown: false,
+          presentation: "card"
+        }} 
+      />
+      <Stack.Screen 
+        name="auth/register" 
+        options={{ 
+          headerShown: false,
+          presentation: "card"
+        }} 
+      />
+      <Stack.Screen 
+        name="subscription" 
+        options={{ 
+          headerShown: true,
+          title: "Subscription",
+          presentation: "modal"
+        }} 
+      />
+      <Stack.Screen 
+        name="admin/dashboard" 
+        options={{ 
+          headerShown: true,
+          title: "Admin Dashboard"
+        }} 
+      />
+      <Stack.Screen 
+        name="admin/add-program" 
+        options={{ 
+          headerShown: true,
+          title: "Add Program",
+          presentation: "modal"
+        }} 
+      />
+      <Stack.Screen 
+        name="admin/add-exercise" 
+        options={{ 
+          headerShown: true,
+          title: "Add Exercise",
+          presentation: "modal"
+        }} 
+      />
+      <Stack.Screen 
         name="workout/[id]" 
         options={{ 
           headerShown: true,

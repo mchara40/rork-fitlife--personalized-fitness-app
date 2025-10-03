@@ -1,398 +1,358 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, ChevronDown } from 'lucide-react-native';
-
-import Colors from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Dumbbell, Mail, Lock, User as UserIcon } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
-
-type Gender = 'male' | 'female' | 'all';
+import Colors from '@/constants/colors';
+import { Gender } from '@/types/fitness';
 
 export default function RegisterScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [gender, setGender] = useState<Gender>('all');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { register } = useAuth();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+    const router = useRouter();
+    const insets = useSafeAreaInsets();
+    const { register } = useAuth();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [gender, setGender] = useState<Gender>('all');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
-  const genderOptions: { value: Gender; label: string }[] = [
-    { value: 'all', label: 'All Genders' },
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-  ];
+    const handleRegister = async () => {
+        if (!name || !email || !password || !confirmPassword) {
+            setError('Please fill in all fields');
+            return;
+        }
 
-  const handleRegister = async () => {
-    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters');
+            return;
+        }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
+        setIsLoading(true);
+        setError('');
 
-    setIsLoading(true);
-    try {
-      await register({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        gender,
-      });
-      router.replace('/(tabs)');
-    } catch (error) {
-      Alert.alert('Registration Failed', 'An error occurred during registration');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        try {
+            await register({ email, password, name, gender });
+            router.replace('/(tabs)');
+        } catch (err) {
+            setError('Registration failed. Please try again.');
+            console.error('Registration error:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  const handleLogin = () => {
-    router.push('/auth/login');
-  };
-
-  const handleBack = () => {
-    router.back();
-  };
-
-  return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[Colors.background, Colors.backgroundLight]}
-        style={StyleSheet.absoluteFill}
-      />
-      
-      <KeyboardAvoidingView 
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <ArrowLeft size={24} color={Colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+    return (
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <View style={styles.content}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join thousands of fitness enthusiasts</Text>
-            </View>
-
-            <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIcon}>
-                  <User size={20} color={Colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Full Name"
-                  placeholderTextColor={Colors.textMuted}
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIcon}>
-                  <Mail size={20} color={Colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor={Colors.textMuted}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIcon}>
-                  <Lock size={20} color={Colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor={Colors.textMuted}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
+            <LinearGradient
+                colors={[Colors.primary, Colors.secondary]}
+                style={styles.gradient}
+            >
+                <ScrollView
+                    contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+                    keyboardShouldPersistTaps="handled"
                 >
-                  {showPassword ? (
-                    <EyeOff size={20} color={Colors.textSecondary} />
-                  ) : (
-                    <Eye size={20} color={Colors.textSecondary} />
-                  )}
-                </TouchableOpacity>
-              </View>
+                    <View style={styles.header}>
+                        <View style={styles.iconContainer}>
+                            <Dumbbell color="#fff" size={48} />
+                        </View>
+                        <Text style={styles.title}>Join FitPro</Text>
+                        <Text style={styles.subtitle}>Start Your Fitness Journey</Text>
+                    </View>
 
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIcon}>
-                  <Lock size={20} color={Colors.textSecondary} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm Password"
-                  placeholderTextColor={Colors.textMuted}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} color={Colors.textSecondary} />
-                  ) : (
-                    <Eye size={20} color={Colors.textSecondary} />
-                  )}
-                </TouchableOpacity>
-              </View>
+                    <View style={styles.formContainer}>
+                        <View style={styles.inputContainer}>
+                            <UserIcon color={Colors.textMuted} size={20} style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Full Name"
+                                placeholderTextColor={Colors.textMuted}
+                                value={name}
+                                onChangeText={setName}
+                                editable={!isLoading}
+                            />
+                        </View>
 
-              <View style={styles.genderContainer}>
-                <Text style={styles.genderLabel}>Gender Preference</Text>
-                <View style={styles.genderOptions}>
-                  {genderOptions.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={[
-                        styles.genderOption,
-                        gender === option.value && styles.genderOptionSelected
-                      ]}
-                      onPress={() => setGender(option.value)}
-                    >
-                      <Text style={[
-                        styles.genderOptionText,
-                        gender === option.value && styles.genderOptionTextSelected
-                      ]}>
-                        {option.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
+                        <View style={styles.inputContainer}>
+                            <Mail color={Colors.textMuted} size={20} style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Email"
+                                placeholderTextColor={Colors.textMuted}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                editable={!isLoading}
+                            />
+                        </View>
 
-              <TouchableOpacity
-                style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
-                onPress={handleRegister}
-                disabled={isLoading}
-              >
-                <LinearGradient
-                  colors={isLoading ? [Colors.textMuted, Colors.textMuted] : [Colors.primary, Colors.secondary]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.registerGradient}
-                >
-                  <Text style={styles.registerButtonText}>
-                    {isLoading ? 'Creating Account...' : 'Create Account'}
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                        <View style={styles.inputContainer}>
+                            <Lock color={Colors.textMuted} size={20} style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Password"
+                                placeholderTextColor={Colors.textMuted}
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                editable={!isLoading}
+                            />
+                        </View>
 
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
-              </View>
+                        <View style={styles.inputContainer}>
+                            <Lock color={Colors.textMuted} size={20} style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Confirm Password"
+                                placeholderTextColor={Colors.textMuted}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry
+                                editable={!isLoading}
+                            />
+                        </View>
 
-              <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Already have an account? </Text>
-                <TouchableOpacity onPress={handleLogin}>
-                  <Text style={styles.loginLink}>Sign In</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
-  );
+                        <View style={styles.genderContainer}>
+                            <Text style={styles.genderLabel}>Gender Preference</Text>
+                            <View style={styles.genderButtons}>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.genderButton,
+                                        gender === 'male' && styles.genderButtonActive,
+                                    ]}
+                                    onPress={() => setGender('male')}
+                                    disabled={isLoading}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.genderButtonText,
+                                            gender === 'male' && styles.genderButtonTextActive,
+                                        ]}
+                                    >
+                                        Male
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.genderButton,
+                                        gender === 'female' && styles.genderButtonActive,
+                                    ]}
+                                    onPress={() => setGender('female')}
+                                    disabled={isLoading}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.genderButtonText,
+                                            gender === 'female' && styles.genderButtonTextActive,
+                                        ]}
+                                    >
+                                        Female
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.genderButton,
+                                        gender === 'all' && styles.genderButtonActive,
+                                    ]}
+                                    onPress={() => setGender('all')}
+                                    disabled={isLoading}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.genderButtonText,
+                                            gender === 'all' && styles.genderButtonTextActive,
+                                        ]}
+                                    >
+                                        All
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+                        <TouchableOpacity
+                            style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
+                            onPress={handleRegister}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={styles.registerButtonText}>Create Account</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.loginLink}
+                            onPress={() => router.back()}
+                            disabled={isLoading}
+                        >
+                            <Text style={styles.loginLinkText}>
+                                Already have an account? <Text style={styles.loginLinkBold}>Sign In</Text>
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </LinearGradient>
+        </KeyboardAvoidingView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.backgroundCard,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-    paddingBottom: 40,
-  },
-  titleContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-  form: {
-    gap: 20,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: Colors.text,
-  },
-  eyeButton: {
-    padding: 4,
-  },
-  genderContainer: {
-    marginTop: 8,
-  },
-  genderLabel: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: Colors.text,
-    marginBottom: 12,
-  },
-  genderOptions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  genderOption: {
-    flex: 1,
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-  },
-  genderOptionSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  genderOptionText: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: Colors.text,
-  },
-  genderOptionTextSelected: {
-    color: Colors.white,
-  },
-  registerButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginTop: 8,
-  },
-  registerButtonDisabled: {
-    opacity: 0.6,
-  },
-  registerGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  registerButtonText: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: Colors.white,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border,
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loginText: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-  },
-  loginLink: {
-    fontSize: 16,
-    color: Colors.secondary,
-    fontWeight: '600' as const,
-  },
+    container: {
+        flex: 1,
+    },
+    gradient: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        padding: 24,
+    },
+    header: {
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    iconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 36,
+        fontWeight: '800' as const,
+        color: '#fff',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: 'rgba(255, 255, 255, 0.9)',
+        fontWeight: '500' as const,
+    },
+    formContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 5,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.background,
+        borderRadius: 12,
+        marginBottom: 16,
+        paddingHorizontal: 16,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    inputIcon: {
+        marginRight: 12,
+    },
+    input: {
+        flex: 1,
+        height: 52,
+        fontSize: 16,
+        color: Colors.text,
+    },
+    genderContainer: {
+        marginBottom: 16,
+    },
+    genderLabel: {
+        fontSize: 14,
+        fontWeight: '600' as const,
+        color: Colors.text,
+        marginBottom: 12,
+    },
+    genderButtons: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    genderButton: {
+        flex: 1,
+        height: 44,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: Colors.border,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+    },
+    genderButtonActive: {
+        borderColor: Colors.primary,
+        backgroundColor: Colors.primary,
+    },
+    genderButtonText: {
+        fontSize: 14,
+        fontWeight: '600' as const,
+        color: Colors.text,
+    },
+    genderButtonTextActive: {
+        color: '#fff',
+    },
+    errorText: {
+        color: '#ef4444',
+        fontSize: 14,
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    registerButton: {
+        backgroundColor: Colors.primary,
+        borderRadius: 12,
+        height: 52,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    registerButtonDisabled: {
+        opacity: 0.6,
+    },
+    registerButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700' as const,
+    },
+    loginLink: {
+        alignItems: 'center',
+        paddingVertical: 12,
+    },
+    loginLinkText: {
+        fontSize: 14,
+        color: Colors.textMuted,
+    },
+    loginLinkBold: {
+        fontWeight: '700' as const,
+        color: Colors.primary,
+    },
 });

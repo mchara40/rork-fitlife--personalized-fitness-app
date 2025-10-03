@@ -2,42 +2,34 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-
-import { User, Crown, Calendar, CreditCard, Settings, LogOut, ChevronRight } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { User, Crown, Calendar, CreditCard, Settings, LogOut, ChevronRight, Shield } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useFitness } from '@/contexts/FitnessContext';
-import { SubscriptionPlan } from '@/types/fitness';
-
-const subscriptionPlans: { plan: SubscriptionPlan; label: string; price: string; savings?: string }[] = [
-  { plan: '1_month', label: '1 Month', price: '$29.99' },
-  { plan: '3_months', label: '3 Months', price: '$74.99', savings: 'Save 17%' },
-  { plan: '6_months', label: '6 Months', price: '$134.99', savings: 'Save 25%' },
-  { plan: '1_year', label: '1 Year', price: '$239.99', savings: 'Save 33%' },
-];
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { userProfile, hasActiveSubscription, updateSubscription } = useFitness();
+  const { isAdmin, logout } = useAuth();
   const insets = useSafeAreaInsets();
 
-  const handleSubscribe = (plan: SubscriptionPlan) => {
+  const handleSubscribe = () => {
+    router.push('/subscription');
+  };
+
+  const handleLogout = () => {
     Alert.alert(
-      'Subscribe',
-      `Subscribe to ${subscriptionPlans.find(p => p.plan === plan)?.label} plan?`,
+      'Log Out',
+      'Are you sure you want to log out?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Subscribe',
+          text: 'Log Out',
+          style: 'destructive',
           onPress: () => {
-            const duration = plan === '1_month' ? 30 : plan === '3_months' ? 90 : plan === '6_months' ? 180 : 365;
-            updateSubscription({
-              plan,
-              startDate: new Date().toISOString(),
-              endDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString(),
-              isActive: true,
-              isTrial: false,
-              autoRenew: true,
-            });
-            Alert.alert('Success', 'Subscription activated!');
+            logout();
+            router.replace('/auth/login');
           },
         },
       ]
@@ -163,31 +155,37 @@ export default function ProfileScreen() {
           )}
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Subscription Plans</Text>
-            {subscriptionPlans.map((item) => (
-              <TouchableOpacity
-                key={item.plan}
-                style={styles.planCard}
-                onPress={() => handleSubscribe(item.plan)}
-              >
-                <View style={styles.planContent}>
-                  <View style={styles.planInfo}>
-                    <Text style={styles.planLabel}>{item.label}</Text>
-                    {item.savings && (
-                      <View style={styles.savingsBadge}>
-                        <Text style={styles.savingsText}>{item.savings}</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.planPrice}>{item.price}</Text>
-                </View>
-                <ChevronRight size={20} color={Colors.textSecondary} />
-              </TouchableOpacity>
-            ))}
+            <Text style={styles.sectionTitle}>Subscription</Text>
+            <TouchableOpacity
+              style={styles.planCard}
+              onPress={handleSubscribe}
+            >
+              <View style={styles.menuIcon}>
+                <Crown size={20} color={Colors.primary} />
+              </View>
+              <View style={styles.planContent}>
+                <Text style={styles.planLabel}>Manage Subscription</Text>
+                <Text style={styles.planSubtext}>View plans and upgrade</Text>
+              </View>
+              <ChevronRight size={20} color={Colors.textSecondary} />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Settings</Text>
+            {isAdmin && (
+              <TouchableOpacity 
+                style={styles.menuItem}
+                onPress={() => router.push('/admin/dashboard')}
+              >
+                <View style={styles.menuIcon}>
+                  <Shield size={20} color={Colors.primary} />
+                </View>
+                <Text style={styles.menuText}>Admin Dashboard</Text>
+                <ChevronRight size={20} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity style={styles.menuItem}>
               <View style={styles.menuIcon}>
                 <Calendar size={20} color={Colors.text} />
@@ -212,7 +210,7 @@ export default function ProfileScreen() {
               <ChevronRight size={20} color={Colors.textSecondary} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
               <View style={styles.menuIcon}>
                 <LogOut size={20} color={Colors.accent} />
               </View>
@@ -369,9 +367,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   planLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600' as const,
     color: Colors.text,
+  },
+  planSubtext: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    marginTop: 2,
   },
   savingsBadge: {
     backgroundColor: Colors.success,
